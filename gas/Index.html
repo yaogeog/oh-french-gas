@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh French</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #F5F2F4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* ── Custom Color Utilities ── */
+        .bg-macaron-blue {
+            background-color: #5A90C0;
+        }
+
+        .bg-macaron-orange {
+            background-color: #ECA07C;
+        }
+
+        .bg-macaron-pink {
+            background-color: #F08A96;
+        }
+
+        .bg-macaron-purple {
+            background-color: #A274C2;
+        }
+
+        .text-macaron-blue {
+            color: #5A90C0;
+        }
+
+        .text-macaron-orange {
+            color: #D09070;
+        }
+
+        .text-macaron-pink {
+            color: #D0909F;
+        }
+
+        .text-macaron-purple {
+            color: #A274C2;
+        }
+
+        .border-macaron-blue {
+            border-color: #A2C2E1;
+        }
+
+        .border-macaron-purple {
+            border-color: #B89FD8;
+        }
+
+        /* ── Card ── */
+        .macaron-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 16px rgba(162, 194, 225, 0.18);
+            border: 1px solid #eef2f8;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .macaron-card:hover {
+            box-shadow: 0 8px 28px rgba(162, 194, 225, 0.28);
+        }
+
+        /* ── Nav active state dynamic colors ── */
+        .nav-btn {
+            transition: color 0.15s;
+        }
+
+        .nav-btn.active.nav-review {
+            background-color: #F08A96;
+            color: white;
+            font-weight: 600;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-btn.active.nav-flashcard {
+            background-color: #5A92CC;
+            color: white;
+            font-weight: 600;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-btn.active.nav-quiz {
+            background-color: #ECA07C;
+            color: white;
+            font-weight: 600;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ── Header dynamic colors ── */
+        .header-review {
+            border-top: 4px solid #F08A96;
+        }
+
+        .header-flashcard {
+            border-top: 4px solid #5A92CC;
+        }
+
+        .header-quiz {
+            border-top: 4px solid #ECA07C;
+        }
+
+        /* ── Play button ── */
+        .play-btn {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #5A92CC;
+            /* Default to blue, will adapt */
+            color: white;
+            box-shadow: 0 2px 8px rgba(130, 178, 225, 0.4);
+            transition: transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.12);
+        }
+
+        .play-btn-review {
+            background-color: #F08A96;
+            box-shadow: 0 2px 8px rgba(244, 148, 159, 0.4);
+        }
+
+        .play-btn-quiz {
+            background-color: #ECA07C;
+            box-shadow: 0 2px 8px rgba(244, 160, 138, 0.4);
+        }
+
+        /* ── Flashcard 3D ── */
+        .flashcard-scene {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 260px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        @media (min-width: 640px) {
+            .flashcard {
+                height: 320px;
+            }
+        }
+
+        .flashcard-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+            border-radius: 1.25rem;
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            border: 1px solid #eef2f8;
+        }
+
+        .flashcard-front {
+            background: white;
+            box-shadow: 0 8px 28px rgba(162, 194, 225, 0.2);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, #70A0E1, #88B0E1);
+            color: white;
+            transform: rotateY(180deg);
+            box-shadow: 0 8px 28px rgba(130, 178, 225, 0.4);
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 3px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #B87FD0;
+            border-radius: 4px;
+        }
+
+        /* ── Blur mask ── */
+        .masked {
+            opacity: 0.1;
+            filter: blur(5px);
+            user-select: none;
+            transition: filter 0.2s;
+        }
+
+        /* ── Edit Modal ── */
+        #edit-modal {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body class="text-gray-700 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header id="main-header"
+        class="bg-white px-5 py-3 shadow-sm sticky top-0 z-50 flex justify-between items-center transition-colors duration-300">
+        <div class="text-xl font-bold flex items-center gap-2 cursor-pointer" style="" onclick="app.goHome()">
+            <i class="fa-solid fa-language" style="color:#5292B1;"></i> OH French
+        </div>
+
+        <!-- Navigation for Learning Mode -->
+        <nav id="nav-learning" class="hidden flex gap-1 sm:gap-2 overflow-x-auto items-center">
+            <button
+                class="nav-btn nav-review px-3 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                data-target="review">
+                <i class="fa-solid fa-list mr-1"></i><span class="hidden sm:inline">瀏覽</span><span
+                    class="sm:hidden">看</span>
+            </button>
+            <button
+                class="nav-btn nav-flashcard px-3 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                data-target="flashcard">
+                <i class="fa-solid fa-clone mr-1"></i><span class="hidden sm:inline">卡片</span><span
+                    class="sm:hidden">卡</span>
+            </button>
+            <button
+                class="nav-btn nav-quiz px-3 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                data-target="quiz">
+                <i class="fa-solid fa-pen-to-square mr-1"></i><span class="hidden sm:inline">考試</span><span
+                    class="sm:hidden">考</span>
+            </button>
+            <div class="h-5 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+            <button
+                class="px-3 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-red-400 transition-colors"
+                onclick="app.goHome()">
+                <i class="fa-solid fa-arrow-left mr-1"></i><span class="hidden sm:inline">首頁</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 w-full max-w-3xl mx-auto p-4 md:p-6 relative">
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay"
+            class="absolute inset-0 bg-white/80 z-40 flex flex-col items-center justify-center hidden rounded-2xl">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4" style="color:#B87FD0;"></i>
+            <p class="text-gray-500 font-medium tracking-wide">載入中...</p>
+        </div>
+
+        <!-- 1. Home Dashboard View -->
+        <div id="view-home" class="view-section">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+                    <i class="fa-solid fa-book-open" style="color:#B87FD0;"></i> 我的詞單
+                </h2>
+                <button onclick="app.goCreate()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm text-white shadow-md transition-opacity hover:opacity-90 bg-macaron-blue">
+                    <i class="fa-solid fa-plus"></i> 增加詞單
+                </button>
+            </div>
+
+            <div id="unit-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div id="empty-state" class="hidden text-center py-20">
+                <i class="fa-regular fa-folder-open text-6xl text-gray-200 mb-4"></i>
+                <p class="text-gray-400">目前無詞單，緊來做囉！</p>
+            </div>
+        </div>
+
+        <!-- 2. Create Unit View -->
+        <div id="view-create" class="view-section hidden">
+            <div class="macaron-card p-6 md:p-8">
+                <h2 class="text-xl font-bold mb-6 text-gray-800 border-b border-gray-100 pb-4">
+                    <i class="fa-solid fa-wand-magic-sparkles text-macaron-blue"></i> 新詞單
+                </h2>
+
+                <form id="create-form" onsubmit="app.submitUnit(event)">
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-600 mb-2">詞單名稱</label>
+                        <input type="text" id="input-unit-name" required
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                            style="--tw-ring-color:#5A92CC;" placeholder="e.g. 基礎問候語">
+                    </div>
+
+                    <div id="form-rows" class="space-y-3 mb-4">
+                    </div>
+
+                    <div class="mb-6">
+                        <button type="button" onclick="app.addFormRow('form-rows')"
+                            class="text-sm font-medium hover:underline text-macaron-blue flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> 新增詞
+                        </button>
+                    </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <button type="button" onclick="app.goHome()"
+                    class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors font-medium">取消</button>
+                <button type="submit"
+                    class="px-5 py-2.5 rounded-xl text-white font-semibold shadow-md hover:opacity-90 inline-flex items-center gap-2 bg-macaron-blue">
+                    <i class="fa-solid fa-check"></i> 保存詞單
+                </button>
+            </div>
+            </form>
+        </div>
+        </div>
+
+        <!-- 3. Learning Mode View -->
+        <div id="view-learning" class="view-section hidden">
+            <!-- Title & TTS Settings -->
+            <div class="macaron-card p-4 mb-5">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <h2 id="learning-unit-title" class="text-lg font-bold text-gray-800">單元名稱</h2>
+                        <button id="edit-unit-btn" onclick="app.openEditModal()"
+                            class="text-gray-400 hover:text-blue-500 text-sm px-2 hidden" title="編輯詞單">
+                            <i class="fa-solid fa-pen"></i> 編輯
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3 text-sm">
+                        <i class="fa-solid fa-gear text-macaron-blue"></i>
+                        <label class="text-gray-500">speed</label>
+                        <input type="range" id="tts-rate" min="0.6" max="1.2" step="0.1" value="1.0"
+                            class="w-20 accent-blue-400"
+                            oninput="document.getElementById('tts-rate-label').textContent=parseFloat(this.value).toFixed(1)">
+                        <span id="tts-rate-label" class="text-gray-700 font-semibold w-7">1.0</span>
+                        <div class="h-4 w-px bg-gray-200"></div>
+                        <label class="text-gray-500">voice</label>
+                        <select id="tts-voice"
+                            class="bg-transparent border-none outline-none text-gray-700 w-28 truncate cursor-pointer text-xs"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Content Injection -->
+            <div id="learning-content" class="min-h-[300px]"></div>
+        </div>
+
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 text-sm font-medium">
+        <i class="fa-solid fa-circle-check text-green-400"></i>
+        <span id="toast-msg">訊息</span>
+    </div>
+
+    <!-- Edit Unit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/40 z-50 items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen text-macaron-pink"></i> 編輯詞單</h3>
+                <button onclick="app.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i
+                        class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">詞單名稱</label>
+                    <input type="text" id="edit-unit-name"
+                        class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-macaron-blue">
+                </div>
+                <div id="edit-form-rows" class="space-y-3 mb-4"></div>
+                <button type="button" onclick="app.addFormRow('edit-form-rows')"
+                    class="text-sm font-medium text-macaron-pink hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> 新增詞</button>
+            </div>
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="app.closeEditModal()"
+                    class="px-5 py-2 rounded-xl text-gray-500 font-medium hover:bg-gray-200 transition-colors">取消</button>
+                <button onclick="app.saveEditUnit()"
+                    class="px-5 py-2 rounded-xl bg-macaron-pink text-white font-semibold hover:opacity-90 transition-colors shadow-sm"><i
+                        class="fa-solid fa-check"></i> 保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        class LinguFlowApp {
+            constructor() {
+                this.units = [];
+                this.currentUnit = null;
+                this.currentMode = 'review';
+                this.voices = [];
+                this.isLocal = typeof google === 'undefined';
+
+                // States
+                this.fc = { index: 0, order: [], isShuffled: false, flipped: false };
+                this.review = { isShuffled: false, order: [] };
+                this.quiz = { askLang: 'fr', isShuffled: false, order: [] }; // 'fr' means show French, translate to EN; 'en' means show EN, translate to FR
+
+                this.cacheDOM();
+                this.initTTS();
+                this.bindEvents();
+                this.loadData();
+            }
+
+            cacheDOM() {
+                this.views = {
+                    home: document.getElementById('view-home'),
+                    create: document.getElementById('view-create'),
+                    learning: document.getElementById('view-learning')
+                };
+                this.navLearning = document.getElementById('nav-learning');
+                this.learningContent = document.getElementById('learning-content');
+                this.loadingOverlay = document.getElementById('loading-overlay');
+                this.toast = document.getElementById('toast');
+                this.header = document.getElementById('main-header');
+            }
+
+            bindEvents() {
+                document.querySelectorAll('.nav-btn[data-target]').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        const target = e.currentTarget.dataset.target;
+                        this.switchLearningMode(target);
+                    });
+                });
+            }
+
+            /* ── Navigation & Theming ── */
+            setTheme(mode) {
+                // Remove all custom header theme classes
+                this.header.classList.remove('header-review', 'header-flashcard', 'header-quiz');
+
+                // Reset all nav buttons
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+                if (mode) {
+                    this.header.classList.add(`header-${mode}`);
+                    const btn = document.querySelector(`.nav-${mode}`);
+                    if (btn) btn.classList.add('active');
+                }
+            }
+
+            showView(name) {
+                Object.values(this.views).forEach(el => el.classList.add('hidden'));
+                this.views[name].classList.remove('hidden');
+                this.navLearning.classList.toggle('hidden', name !== 'learning');
+                if (name !== 'learning') {
+                    this.setTheme(null); // Reset theme when not learning
+                    // Hide edit button on home/create
+                    document.getElementById('edit-unit-btn').classList.add('hidden');
+                }
+            }
+
+            goHome() { this.showView('home'); this.renderHome(); }
+
+            goCreate() {
+                this.showView('create');
+                document.getElementById('create-form').reset();
+                document.getElementById('form-rows').innerHTML = '';
+                this.addFormRow('form-rows');
+            }
+
+            goLearning(unitId) {
+                this.currentUnit = this.units.find(u => u.Unit_ID === unitId);
+                if (!this.currentUnit) return;
+                document.getElementById('learning-unit-title').textContent = this.currentUnit.Unit_Name;
+                this.showView('learning');
+                this.switchLearningMode('review');
+            }
+
+            /* ── Data ── */
+            async loadData() {
+                this.showLoading(true);
+                if (this.isLocal) {
+                    await new Promise(r => setTimeout(r, 600));
+                    this.units = [
+                        {
+                            Unit_ID: 1, Unit_Name: 'Greetings',
+                            sentences: [
+                                { FR_Sentence: 'Bonjour', EN_Translation: 'Hello' },
+                                { FR_Sentence: 'Merci beaucoup', EN_Translation: 'Thank you very much' },
+                                { FR_Sentence: 'Au revoir', EN_Translation: 'Goodbye' },
+                                { FR_Sentence: 'S\'il vous plaît', EN_Translation: 'Please' },
+                                { FR_Sentence: 'Comment allez-vous?', EN_Translation: 'How are you?' }
+                            ]
+                        }
+                    ];
+                    this.renderHome();
+                    this.showLoading(false);
+                    return;
+                }
+                google.script.run
+                    .withSuccessHandler(res => { this.units = res; this.renderHome(); this.showLoading(false); })
+                    .withFailureHandler(err => { console.error(err); this.showToast('載入資料失敗', true); this.showLoading(false); })
+                    .getUnits();
+            }
+
+            async submitUnit(e) {
+                if (e) e.preventDefault();
+                await this.saveData('add');
+            }
+
+            async saveEditUnit() {
+                await this.saveData('edit');
+            }
+
+            async saveData(action) {
+                let unitName, frInputs, enInputs;
+
+                if (action === 'add') {
+                    unitName = document.getElementById('input-unit-name').value.trim();
+                    frInputs = document.querySelectorAll('#form-rows .fr-input');
+                    enInputs = document.querySelectorAll('#form-rows .en-input');
+                } else {
+                    unitName = document.getElementById('edit-unit-name').value.trim();
+                    frInputs = document.querySelectorAll('#edit-form-rows .fr-input');
+                    enInputs = document.querySelectorAll('#edit-form-rows .en-input');
+                }
+
+                const dataArray = [];
+                frInputs.forEach((fi, i) => {
+                    const fr = fi.value.trim(), en = enInputs[i].value.trim();
+                    if (fr && en) dataArray.push({ fr, en });
+                });
+
+                if (!dataArray.length) { this.showToast('請至少輸入一組有效的片語', true); return; }
+
+                this.showLoading(true);
+
+                if (this.isLocal) {
+                    await new Promise(r => setTimeout(r, 800));
+                    if (action === 'add') {
+                        this.units.push({ Unit_ID: Date.now(), Unit_Name: unitName, sentences: dataArray.map(s => ({ FR_Sentence: s.fr, EN_Translation: s.en })) });
+                        this.showToast('添加成功！');
+                        this.goHome();
+                    } else {
+                        // Edit local
+                        this.currentUnit.Unit_Name = unitName;
+                        this.currentUnit.sentences = dataArray.map(s => ({ FR_Sentence: s.fr, EN_Translation: s.en }));
+                        document.getElementById('learning-unit-title').textContent = unitName;
+                        this.showToast('修改成功！');
+                        this.closeEditModal();
+                        this.switchLearningMode(this.currentMode); // Re-render current view
+                    }
+                    this.showLoading(false);
+                    return;
+                }
+
+                // GAS logic: we can just use saveData which creates a new sheet tab with the name. 
+                // Since there's no native "edit", if unitName matches, it overwrites the sheet contents.
+                // If the user changed the unit name... saving to a new name creates a new unit in GAS. 
+                // To do true "edit" we ideally need an ID, but let's assume `saveData` overwrites if name exists, or creates new.
+                // We'll pass oldName to standard `editData` if the backend supports it, otherwise we'll just try to save with the new name.
+                // Currently backend only exposes `saveData(unitName, dataArray)`
+                // Note: The user requested editing, but the backend architecture relies on `Unit_Name` as sheet name. 
+                let functionCall;
+                if (action === 'edit' && this.currentUnit.Unit_Name !== unitName) {
+                    // We would ideally call an editData function. Let's assume we call editData on GAS.
+                    functionCall = google.script.run.withSuccessHandler(res => { this.handleGASResponse(res, action); }).withFailureHandler(err => this.handleGASError(err, action)).editData(this.currentUnit.Unit_Name, unitName, dataArray);
+                } else {
+                    functionCall = google.script.run.withSuccessHandler(res => { this.handleGASResponse(res, action); }).withFailureHandler(err => this.handleGASError(err, action)).saveData(unitName, dataArray);
+                }
+            }
+
+            handleGASResponse(res, action) {
+                if (res.success) {
+                    this.showToast(res.message);
+                    if (action === 'edit') this.closeEditModal();
+                    this.loadData();
+                    if (action === 'add') this.goHome();
+                }
+                else {
+                    this.showToast('儲存失敗: ' + res.message, true);
+                    this.showLoading(false);
+                }
+            }
+
+            handleGASError(err, action) {
+                console.error(err);
+                // If it fails with "editData is not a function", gracefully default back to saveData
+                if (err.message && err.message.includes('editData')) {
+                    this.showToast('伺服器不支援改名，只更新內容...', true);
+                } else {
+                    this.showToast('儲存失敗', true);
+                }
+                this.showLoading(false);
+            }
+
+            /* ── Render Home ── */
+            renderHome() {
+                const list = document.getElementById('unit-list');
+                const empty = document.getElementById('empty-state');
+                list.innerHTML = '';
+                if (!this.units.length) { empty.classList.remove('hidden'); return; }
+                empty.classList.add('hidden');
+                this.units.forEach(unit => {
+                    const el = document.createElement('div');
+                    el.className = 'macaron-card p-5 cursor-pointer border-l-4 group';
+                    el.style.borderLeftColor = '#82B2E1';
+                    el.onclick = () => this.goLearning(unit.Unit_ID);
+                    el.innerHTML = `
+                      <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-500 transition-colors">${unit.Unit_Name}</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-500">${unit.sentences ? unit.sentences.length : 0} 詞</span>
+                      </div>
+                      <div class="flex items-center text-sm font-medium text-macaron-pink">
+                        開始學習 <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                      </div>`;
+                    list.appendChild(el);
+                });
+            }
+
+            addFormRow(containerId) {
+                const row = document.createElement('div');
+                row.className = 'form-row flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center bg-gray-50/50 p-3 sm:p-0 rounded-xl sm:rounded-none border sm:border-0 border-gray-100';
+                row.innerHTML = `
+                  <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2" placeholder="法語 (e.g. Bonjour)" required>
+                  <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2" placeholder="意思 (e.g. Hello)" required>
+                  <button type="button" onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-400 p-2 self-end sm:self-auto"><i class="fa-solid fa-trash"></i></button>`;
+                document.getElementById(containerId).appendChild(row);
+            }
+
+            /* ── Edit Modal Logic ── */
+            openEditModal() {
+                const modal = document.getElementById('edit-modal');
+                document.getElementById('edit-unit-name').value = this.currentUnit.Unit_Name;
+                const rowsContainer = document.getElementById('edit-form-rows');
+                rowsContainer.innerHTML = '';
+
+                this.currentUnit.sentences.forEach((s, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'form-row flex gap-3 items-center';
+                    row.innerHTML = `
+                      <div class="flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
+                      <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 font-bold" placeholder="法語" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
+                      <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2" placeholder="意思" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
+                      <button type="button" onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
+                    rowsContainer.appendChild(row);
+                });
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            closeEditModal() {
+                const modal = document.getElementById('edit-modal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            /* ── Learning Modes ── */
+            switchLearningMode(mode) {
+                this.currentMode = mode;
+                this.setTheme(mode);
+
+                // Show Edit button ONLY in review mode per user logic 
+                const editBtn = document.getElementById('edit-unit-btn');
+                if (mode === 'review') {
+                    editBtn.classList.remove('hidden');
+                } else {
+                    editBtn.classList.add('hidden');
+                }
+
+                const sentences = this.currentUnit.sentences;
+                this.learningContent.innerHTML = '';
+                if (!sentences || !sentences.length) {
+                    this.learningContent.innerHTML = '<p class="text-center py-10 text-gray-300">此單元沒有任何內容。</p>';
+                    return;
+                }
+
+                if (mode === 'review') {
+                    // Initialize review order
+                    if (this.review.order.length !== sentences.length) {
+                        this.review.order = sentences.map((_, i) => i);
+                        this.review.isShuffled = false;
+                    }
+
+                    const controls = document.createElement('div');
+                    controls.className = 'flex gap-2 mb-4 justify-end items-center';
+                    controls.innerHTML = `
+                      <button id="review-shuffle-btn" onclick="app.toggleReviewShuffle()"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.review.isShuffled ? 'bg-pink-50 border-pink-200 text-pink-500' : 'border-gray-200 text-gray-400 hover:border-gray-300'}">
+                        <i class="fa-solid fa-shuffle text-xs"></i> 隨機
+                      </button>
+                      <button id="toggle-fr-btn" onclick="app.toggleMask('fr')"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+                        <i class="fa-solid fa-eye text-xs"></i> 法語
+                      </button>
+                      <button id="toggle-en-btn" onclick="app.toggleMask('en')"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+                        <i class="fa-solid fa-eye text-xs"></i> 意思
+                      </button>`;
+                    this.learningContent.appendChild(controls);
+
+                    const wrap = document.createElement('div');
+                    wrap.id = 'review-list-wrap';
+                    wrap.className = 'flex flex-col gap-3';
+                    this.learningContent.appendChild(wrap);
+                    this.renderReviewList();
+                }
+
+                else if (mode === 'flashcard') {
+                    this.fc.index = 0;
+                    this.fc.order = sentences.map((_, i) => i);
+                    if (this.fc.isShuffled) this.fc.order.sort(() => Math.random() - 0.5);
+
+                    const controls = document.createElement('div');
+                    controls.className = 'flex justify-between items-center mb-4';
+                    controls.innerHTML = `
+                      <span class="text-gray-400 text-sm font-medium">
+                        <span id="fc-current">1</span> <span class="text-gray-300">/</span> ${sentences.length}
+                      </span>
+                      <button id="fc-shuffle-btn" onclick="app.toggleShuffle()"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.fc.isShuffled ? 'bg-blue-50 border-blue-200 text-blue-500' : 'border-gray-200 text-gray-400 hover:border-gray-300'}">
+                        <i class="fa-solid fa-shuffle text-xs"></i> 隨機
+                      </button>`;
+                    this.learningContent.appendChild(controls);
+
+                    const scene = document.createElement('div');
+                    scene.className = 'flashcard-scene mb-6';
+                    scene.id = 'fc-scene';
+                    this.learningContent.appendChild(scene);
+
+                    const nav = document.createElement('div');
+                    nav.className = 'flex justify-center gap-4 mt-2';
+                    nav.innerHTML = `
+                      <button onclick="app.navFC(-1)"
+                        class="w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
+                        <i class="fa-solid fa-chevron-left text-lg"></i>
+                      </button>
+                      <button onclick="app.navFC(1)"
+                        class="w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
+                        <i class="fa-solid fa-chevron-right text-lg"></i>
+                      </button>`;
+                    this.learningContent.appendChild(nav);
+
+                    this.renderFC();
+                }
+
+                else if (mode === 'quiz') {
+                    const controls = document.createElement('div');
+                    controls.className = 'flex justify-end gap-2 mb-4';
+                    const isFrTitle = this.quiz.askLang === 'fr' ? '考法語' : '考意思';
+
+                    if (this.quiz.order.length !== sentences.length) {
+                        this.quiz.order = sentences.map((_, i) => i);
+                        this.quiz.isShuffled = false;
+                    }
+
+                    controls.innerHTML = `
+                      <button id="quiz-shuffle-btn" onclick="app.toggleQuizShuffle()"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.quiz.isShuffled ? 'bg-orange-50 border-orange-200 text-orange-400' : 'border-gray-200 text-gray-400 hover:border-gray-300'}">
+                        <i class="fa-solid fa-shuffle text-xs"></i> 隨機
+                      </button>
+                      <button onclick="app.toggleQuizLang()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-400 text-sm font-medium hover:bg-orange-100 transition-colors">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i> ${isFrTitle}
+                      </button>`;
+                    this.learningContent.appendChild(controls);
+
+                    const wrap = document.createElement('div');
+                    wrap.className = 'flex flex-col gap-5';
+                    this.quiz.order.forEach((realIdx, displayIdx) => {
+                        const s = sentences[realIdx];
+                        const questionText = this.quiz.askLang === 'fr' ? s.FR_Sentence : s.EN_Translation;
+                        const answerText = this.quiz.askLang === 'fr' ? s.EN_Translation : s.FR_Sentence;
+
+                        const q = document.createElement('div');
+                        q.className = 'macaron-card p-5';
+                        q.innerHTML = `
+                          <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-base text-gray-700 font-medium flex-1">
+                              <span class="font-bold mr-2 text-macaron-orange">Q${displayIdx + 1}.</span>${questionText}
+                            </h3>
+                            <button class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-sm hover:bg-orange-100 transition-colors shrink-0 ml-3 text-macaron-orange" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')" title="播放法文">
+                              <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                          </div>
+                          <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="quiz-input-${displayIdx}"
+                              class="quiz-input flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-macaron-orange focus:outline-none"
+                              placeholder="Your answer ..."
+                              onkeydown="if(event.key==='Enter' && event.ctrlKey) { app.moveNextQuiz(${displayIdx}); } else if(event.key==='Enter') { app.checkQuiz(${displayIdx}, '${escape(answerText)}'); }">
+                            <button class="px-5 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 shadow-sm bg-macaron-orange"
+                              onclick="app.checkQuiz(${displayIdx}, '${escape(answerText)}')">Check</button>
+                          </div>
+                          <div id="quiz-result-${displayIdx}" class="mt-3 text-sm font-medium hidden"></div>`;
+                        wrap.appendChild(q);
+                    });
+                    this.learningContent.appendChild(wrap);
+                }
+            }
+
+            /* ── Review: render list & shuffle ── */
+            renderReviewList() {
+                const wrap = document.getElementById('review-list-wrap');
+                if (!wrap) return;
+                wrap.innerHTML = '';
+
+                // Restore masks if they were active
+                const frMaskBtn = document.getElementById('toggle-fr-btn');
+                const isFrMasked = frMaskBtn && frMaskBtn.querySelector('i').classList.contains('fa-eye-slash');
+                const enMaskBtn = document.getElementById('toggle-en-btn');
+                const isEnMasked = enMaskBtn && enMaskBtn.querySelector('i').classList.contains('fa-eye-slash');
+
+                this.review.order.forEach((i, idx) => {
+                    const s = this.currentUnit.sentences[i];
+                    const r = document.createElement('div');
+                    r.className = 'macaron-card p-4 flex items-center gap-4';
+                    r.innerHTML = `
+                        <div class="flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
+                        <div class="flex-1 min-w-0">
+                          <h3 class="text-lg font-bold text-gray-800 mb-0.5 mask-fr ${isFrMasked ? 'masked' : ''}">${s.FR_Sentence}</h3>
+                          <p class="text-gray-500 text-sm mask-en ${isEnMasked ? 'masked' : ''}">${s.EN_Translation}</p>
+                        </div>
+                        <button class="play-btn play-btn-review shrink-0" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')">
+                          <i class="fa-solid fa-volume-high text-sm"></i>
+                        </button>`;
+                    wrap.appendChild(r);
+                });
+            }
+
+            toggleReviewShuffle() {
+                this.review.isShuffled = !this.review.isShuffled;
+                const btn = document.getElementById('review-shuffle-btn');
+                if (this.review.isShuffled) {
+                    btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border bg-pink-50 border-pink-200 text-pink-400';
+                    this.review.order = this.currentUnit.sentences.map((_, i) => i).sort(() => Math.random() - 0.5);
+                } else {
+                    btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-200 text-gray-400 hover:border-gray-300';
+                    this.review.order = this.currentUnit.sentences.map((_, i) => i);
+                }
+                this.renderReviewList();
+            }
+
+            toggleMask(type) {
+                const els = document.querySelectorAll(`.mask-${type}`);
+                if (!els.length) return;
+                const isMasked = els[0].classList.contains('masked');
+                els.forEach(el => el.classList.toggle('masked', !isMasked));
+                const btn = document.getElementById(`toggle-${type}-btn`);
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    const becomesMasked = !isMasked;
+                    if (becomesMasked) {
+                        // Hidden state
+                        icon.className = 'fa-solid fa-eye-slash text-xs';
+                    } else {
+                        // Shown state (Default)
+                        icon.className = 'fa-solid fa-eye text-xs';
+                    }
+                    // Color remains gray as requested (no class toggling for color)
+                    btn.classList.remove('bg-pink-50', 'border-pink-200', 'text-pink-600');
+                    btn.classList.add('border-gray-200', 'text-gray-600', 'bg-white');
+                }
+            }
+
+            /* ── Flashcard navigation ── */
+            navFC(dir) {
+                const total = this.currentUnit.sentences.length;
+                this.fc.index = (this.fc.index + dir + total) % total;
+                this.renderFC();
+            }
+
+            toggleShuffle() {
+                this.fc.isShuffled = !this.fc.isShuffled;
+                const btn = document.getElementById('fc-shuffle-btn');
+                if (this.fc.isShuffled) {
+                    btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border bg-blue-50 border-blue-200 text-blue-500';
+                    this.fc.order = this.currentUnit.sentences.map((_, i) => i).sort(() => Math.random() - 0.5);
+                } else {
+                    btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-200 text-gray-400 hover:border-gray-300';
+                    this.fc.order = this.currentUnit.sentences.map((_, i) => i);
+                }
+                this.fc.index = 0;
+                this.renderFC();
+            }
+
+            renderFC() {
+                const scene = document.getElementById('fc-scene');
+                if (!scene) return;
+                const realIdx = this.fc.order[this.fc.index];
+                const s = this.currentUnit.sentences[realIdx];
+                document.getElementById('fc-current').textContent = this.fc.index + 1;
+
+                scene.innerHTML = '';
+                const card = document.createElement('div');
+                card.className = 'flashcard' + (this.fc.flipped ? ' flipped' : '');
+                const fr = s.FR_Sentence.replace(/'/g, "\\'");
+                const en = s.EN_Translation.replace(/'/g, "\\'");
+                card.innerHTML = `
+                  <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                      <p class="text-xs text-gray-300 mb-3 flex items-center gap-1"><i class="fa-solid fa-rotate"></i> 反面</p>
+                      <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-5 leading-snug">${s.FR_Sentence}</h2>
+                      <button class="w-11 h-11 rounded-full flex items-center justify-center border-2 text-blue-300 border-current hover:bg-blue-50 transition-colors"
+                        onclick="event.stopPropagation(); app.playTTS('${fr}')">
+                        <i class="fa-solid fa-volume-high"></i>
+                      </button>
+                    </div>
+                    <div class="flashcard-back">
+                      <p class="text-xs text-blue-200 mb-3 flex items-center gap-1"><i class="fa-solid fa-rotate"></i> 反面</p>
+                      <h2 class="text-2xl sm:text-3xl font-bold text-white text-center mb-5 leading-snug">${s.EN_Translation}</h2>
+                      <button class="w-11 h-11 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 transition-colors text-white"
+                        onclick="event.stopPropagation(); app.playTTS('${en}', 'en-GB')">
+                        <i class="fa-solid fa-volume-high"></i>
+                      </button>
+                    </div>
+                  </div>`;
+                card.onclick = () => {
+                    card.classList.toggle('flipped');
+                    this.fc.flipped = card.classList.contains('flipped');
+                };
+                scene.appendChild(card);
+            }
+
+            /* ── Quiz check ── */
+            toggleQuizLang() {
+                this.quiz.askLang = this.quiz.askLang === 'fr' ? 'en' : 'fr';
+                this.switchLearningMode('quiz');
+            }
+
+            toggleQuizShuffle() {
+                this.quiz.isShuffled = !this.quiz.isShuffled;
+                if (this.quiz.isShuffled) {
+                    this.quiz.order.sort(() => Math.random() - 0.5);
+                } else {
+                    this.quiz.order = this.currentUnit.sentences.map((_, i) => i);
+                }
+                this.switchLearningMode('quiz');
+            }
+
+            moveNextQuiz(currentIdx) {
+                const nextInput = document.getElementById(`quiz-input-${currentIdx + 1}`);
+                if (nextInput) {
+                    nextInput.focus();
+                }
+            }
+
+            checkQuiz(idx, encodedExpected) {
+                const expected = unescape(encodedExpected);
+                const inputVal = document.getElementById(`quiz-input-${idx}`).value;
+                const resDiv = document.getElementById(`quiz-result-${idx}`);
+                const normalize = str => str.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+                resDiv.classList.remove('hidden', 'text-green-600', 'text-red-600', 'bg-green-50', 'bg-red-50');
+                resDiv.classList.add('p-3', 'rounded-lg');
+                if (normalize(inputVal) === normalize(expected)) {
+                    resDiv.innerHTML = '<i class="fa-solid fa-check mr-2"></i> 正確！';
+                    resDiv.classList.add('text-green-600', 'bg-green-50');
+                } else {
+                    resDiv.innerHTML = `<i class="fa-solid fa-xmark mr-2"></i> 錯誤。<span class="text-gray-400 ml-2">正確答案：${expected}</span>`;
+                    resDiv.classList.add('text-red-600', 'bg-red-50');
+                }
+            }
+
+            /* ── TTS ── */
+            initTTS() {
+                const fill = () => {
+                    const all = speechSynthesis.getVoices();
+                    this.voices = all.filter(v => v.lang.startsWith('fr'));
+                    if (!this.voices.length) this.voices = all;
+                    const sel = document.getElementById('tts-voice');
+                    sel.innerHTML = '';
+                    this.voices.forEach((v, i) => {
+                        const o = document.createElement('option');
+                        o.value = i;
+                        o.textContent = v.name.replace(/-.*/, '').trim() + ' (' + v.lang + ')';
+                        sel.appendChild(o);
+                    });
+                };
+                fill();
+                if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = fill;
+            }
+
+            playTTS(text, lang = 'fr-FR') {
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.rate = parseFloat(document.getElementById('tts-rate').value);
+
+                // Only apply specific voice selection for French
+                if (lang.startsWith('fr')) {
+                    const idx = document.getElementById('tts-voice').value;
+                    if (this.voices[idx]) msg.voice = this.voices[idx];
+                    msg.lang = 'fr-FR';
+                } else {
+                    msg.lang = lang;
+                }
+
+                speechSynthesis.cancel();
+                speechSynthesis.speak(msg);
+            }
+
+            /* ── UI helpers ── */
+            showLoading(on) { this.loadingOverlay.classList.toggle('hidden', !on); }
+
+            showToast(msg, isError = false) {
+                this.toast.querySelector('span').textContent = msg;
+                const icon = this.toast.querySelector('i');
+                if (isError) {
+                    icon.className = 'fa-solid fa-circle-exclamation text-red-400';
+                    this.toast.style.backgroundColor = '#7f1d1d';
+                } else {
+                    icon.className = 'fa-solid fa-circle-check text-green-400';
+                    this.toast.style.backgroundColor = '#1f2937';
+                }
+                this.toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => this.toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+            }
+        }
+
+        const app = new LinguFlowApp();
+    </script>
+</body>
+
+</html>
