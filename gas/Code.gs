@@ -1,12 +1,15 @@
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 const SHEET_NAME = 'Sheet1';
-const ADMIN_EMAIL = ['yaogeog@gmail.com','yaogoking@gmail.com']; // 請修改為您的 Email
+const EDIT_PASSWORD = '@oa975bcf';
 
-function _checkAuth() {
-  const userEmail = Session.getActiveUser().getEmail();
-  if (!ADMIN_EMAIL.includes(userEmail)) {
-    throw new Error('未授權的操作：只有管理員可以修改資料。');
+function _checkAuth(password) {
+  if (password !== EDIT_PASSWORD) {
+    throw new Error('未授權的操作：密碼錯誤。');
   }
+}
+
+function checkPassword(password) {
+  return password === EDIT_PASSWORD;
 }
 
 function doGet(e) {
@@ -16,13 +19,7 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-function getUserEmail() {
-  return Session.getActiveUser().getEmail();
-}
 
-function getAdminEmail() {
-  return ADMIN_EMAIL;
-}
 
 function _getSheet() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -84,9 +81,9 @@ function getUnits() {
   }
 }
 
-function saveData(unitName, dataArray) {
+function saveData(unitName, dataArray, password) {
   try {
-    _checkAuth();
+    _checkAuth(password);
     const sheet = _getSheet();
     const data = sheet.getDataRange().getValues();
     
@@ -127,9 +124,9 @@ function saveData(unitName, dataArray) {
 /**
  * 修改現有單元
  */
-function editData(unitId, unitName, dataArray) {
+function editData(unitId, unitName, dataArray, password) {
   try {
-    _checkAuth();
+    _checkAuth(password);
     const sheet = _getSheet();
     const data = sheet.getDataRange().getValues();
     

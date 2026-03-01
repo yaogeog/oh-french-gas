@@ -420,6 +420,30 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/40 z-50 items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-sm flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-lock text-macaron-blue"></i> 權限驗證</h3>
+                <button onclick="app.closeAuthModal(false)" class="text-gray-400 hover:text-gray-600"><i
+                        class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-5">
+                <p class="text-sm text-gray-600 mb-4 block">請輸入密碼以進行修改操作：</p>
+                <input type="password" id="auth-password-input"
+                    class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-macaron-blue transition-all"
+                    placeholder="請輸入密碼">
+            </div>
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="app.closeAuthModal(false)"
+                    class="px-5 py-2.5 rounded-xl text-gray-500 font-medium hover:bg-gray-200 transition-colors">取消</button>
+                <button onclick="app.submitAuthModal()"
+                    class="px-5 py-2.5 rounded-xl bg-macaron-blue text-white font-semibold hover:opacity-90 transition-colors shadow-sm"><i
+                        class="fa-solid fa-check"></i> 確認</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Application Script -->
     <script>
         class LinguFlowApp {
@@ -429,15 +453,13 @@
                 this.currentMode = 'review';
                 this.voices = [];
                 this.isLocal = typeof google === 'undefined';
-                this.adminEmail = []; // 從後端獲取 (陣列)
-                this.userEmail = '';
+                this.isAuthenticated = false;
+                this.authPassword = '';
+                this.authPromiseResolve = null;
 
                 // 本地模擬身分 (僅在 isLocal 為 true 時有效)
                 if (this.isLocal) {
-                    const params = new URLSearchParams(window.location.search);
-                    this.userEmail = params.get('mockEmail') || 'guest@example.com';
-                    this.adminEmail = ['test@gmail.com'];
-                    console.log('Local Mode - Active User:', this.userEmail);
+                    console.log('Local Mode - Waiting for explicit auth simulation.'); // removed set true initially to simulate auth test
                 }
 
                 // States
@@ -463,6 +485,9 @@
                 this.loadingOverlay = document.getElementById('loading-overlay');
                 this.toast = document.getElementById('toast');
                 this.header = document.getElementById('main-header');
+
+                this.authModal = document.getElementById('auth-modal');
+                this.authPasswordInput = document.getElementById('auth-password-input');
             }
 
             bindEvents() {
@@ -472,53 +497,86 @@
                         this.switchLearningMode(target);
                     });
                 });
+
+                this.authPasswordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.submitAuthModal();
+                    }
+                });
+            }
+
+            /* ── Auth Custom Modal ── */
+            promptPasswordModal() {
+                this.authPasswordInput.value = '';
+                this.authModal.classList.remove('hidden');
+                this.authModal.classList.add('flex');
+                setTimeout(() => this.authPasswordInput.focus(), 100);
+
+                return new Promise(resolve => {
+                    this.authPromiseResolve = resolve;
+                });
+            }
+
+            closeAuthModal(isSubmit) {
+                this.authModal.classList.add('hidden');
+                this.authModal.classList.remove('flex');
+                if (!isSubmit && this.authPromiseResolve) {
+                    this.authPromiseResolve(null);
+                    this.authPromiseResolve = null;
+                }
+            }
+
+            submitAuthModal() {
+                const pwd = this.authPasswordInput.value.trim();
+                if (!pwd) {
+                    this.showToast('請輸入密碼', true);
+                    return;
+                }
+                if (this.authPromiseResolve) {
+                    this.authPromiseResolve(pwd);
+                    this.authPromiseResolve = null;
+                }
+                this.closeAuthModal(true);
             }
 
             async checkAuth() {
+                if (this.isAuthenticated) return true;
+
+                const pwd = await this.promptPasswordModal();
+                if (!pwd) return false;
+
                 if (this.isLocal) {
-                    const isAllowed = this.adminEmail.includes(this.userEmail);
-                    if (!isAllowed) {
-                        this.showToast('本地權限模擬：帳號 (' + this.userEmail + ') 無權執行', true);
-                    }
-                    return isAllowed;
-                }
-
-                // 第一次執行時，先向後端拿取管理員 Email 設定
-                if (!this.adminEmail || !this.adminEmail.length) {
-                    try {
-                        this.adminEmail = await new Promise((resolve, reject) => {
-                            google.script.run
-                                .withSuccessHandler(res => {
-                                    // 確保 res 是陣列
-                                    resolve(Array.isArray(res) ? res : [res]);
-                                })
-                                .withFailureHandler(reject)
-                                .getAdminEmail();
-                        });
-                    } catch (e) {
-                        console.error('無法獲取管理員設定', e);
+                    await new Promise(r => setTimeout(r, 400)); // simulate network delay
+                    // 本地環境測試專用密碼
+                    if (pwd === 'ohfrench') {
+                        this.isAuthenticated = true;
+                        this.authPassword = pwd;
+                        return true;
+                    } else {
+                        this.showToast('密碼錯誤 (本地測試請輸入: ohfrench)', true);
+                        return false;
                     }
                 }
-
-                if (this.adminEmail.includes(this.userEmail) && this.userEmail) return true;
 
                 return new Promise((resolve) => {
                     google.script.run
-                        .withSuccessHandler(email => {
-                            this.userEmail = email;
-                            if (this.adminEmail.includes(email) && email) {
+                        .withSuccessHandler(isValid => {
+                            if (isValid) {
+                                this.isAuthenticated = true;
+                                this.authPassword = pwd;
                                 resolve(true);
                             } else {
-                                this.showToast('權限不足', true);
+                                this.showToast('密碼錯誤', true);
                                 resolve(false);
                             }
                         })
                         .withFailureHandler(err => {
                             console.error(err);
-                            this.showToast('驗證身分出錯', true);
+                            this.showToast('驗證密碼出錯', true);
                             resolve(false);
                         })
-                        .getUserEmail();
+                        .checkPassword(pwd);
                 });
             }
 
@@ -681,13 +739,13 @@
                     functionCall = google.script.run
                         .withSuccessHandler(res => { this.handleGASResponse(res, action); })
                         .withFailureHandler(err => this.handleGASError(err, action))
-                        .editData(this.currentUnit.Unit_ID, unitName, dataArray);
+                        .editData(this.currentUnit.Unit_ID, unitName, dataArray, this.authPassword);
                 } else {
                     // Call saveData for new units
                     functionCall = google.script.run
                         .withSuccessHandler(res => { this.handleGASResponse(res, action); })
                         .withFailureHandler(err => this.handleGASError(err, action))
-                        .saveData(unitName, dataArray);
+                        .saveData(unitName, dataArray, this.authPassword);
                 }
 
             }
