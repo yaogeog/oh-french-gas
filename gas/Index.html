@@ -7,6 +7,7 @@
     <title>Oh French</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         body {
             background-color: #F5F2F4;
@@ -227,6 +228,20 @@
         #edit-modal {
             backdrop-filter: blur(4px);
         }
+
+        /* ── Sortable ── */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #f0f9ff;
+        }
+
+        .drag-handle {
+            cursor: grab;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
     </style>
 </head>
 
@@ -423,6 +438,7 @@
                 this.cacheDOM();
                 this.initTTS();
                 this.bindEvents();
+                this.initSortable();
                 this.loadData();
             }
 
@@ -445,6 +461,28 @@
                         const target = e.currentTarget.dataset.target;
                         this.switchLearningMode(target);
                     });
+                });
+            }
+
+            initSortable() {
+                const config = {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    onEnd: (evt) => {
+                        this.reindexRows(evt.to.id);
+                    }
+                };
+                new Sortable(document.getElementById('form-rows'), config);
+                new Sortable(document.getElementById('edit-form-rows'), config);
+            }
+
+            reindexRows(containerId) {
+                const container = document.getElementById(containerId);
+                const rows = container.querySelectorAll('.form-row');
+                rows.forEach((row, i) => {
+                    const indexEl = row.querySelector('.row-index');
+                    if (indexEl) indexEl.textContent = i + 1;
                 });
             }
 
@@ -635,12 +673,17 @@
 
             addFormRow(containerId) {
                 const row = document.createElement('div');
-                row.className = 'form-row flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center bg-gray-50/50 p-3 sm:p-0 rounded-xl sm:rounded-none border sm:border-0 border-gray-100';
+                row.className = 'form-row flex gap-2 sm:gap-3 items-center bg-gray-50/50 p-2 sm:p-0 rounded-xl sm:rounded-none mb-2';
                 row.innerHTML = `
-                  <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2" placeholder="法語 (e.g. Bonjour)" required>
+                  <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                  </div>
+                  <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center"></div>
+                  <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 font-bold" placeholder="法語 (e.g. Bonjour)" required>
                   <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2" placeholder="意思 (e.g. Hello)" required>
-                  <button type="button" onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-400 p-2 self-end sm:self-auto"><i class="fa-solid fa-trash"></i></button>`;
+                  <button type="button" onclick="this.parentElement.remove(); app.reindexRows('${containerId}')" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
                 document.getElementById(containerId).appendChild(row);
+                this.reindexRows(containerId);
             }
 
             /* ── Edit Modal Logic ── */
@@ -652,12 +695,15 @@
 
                 this.currentUnit.sentences.forEach((s, idx) => {
                     const row = document.createElement('div');
-                    row.className = 'form-row flex gap-3 items-center';
+                    row.className = 'form-row flex gap-3 items-center mb-2';
                     row.innerHTML = `
-                      <div class="flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
+                      <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
+                        <i class="fa-solid fa-grip-vertical"></i>
+                      </div>
+                      <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
                       <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 font-bold" placeholder="法語" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
                       <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2" placeholder="意思" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
-                      <button type="button" onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
+                      <button type="button" onclick="this.parentElement.remove(); app.reindexRows('edit-form-rows')" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
                     rowsContainer.appendChild(row);
                 });
 
