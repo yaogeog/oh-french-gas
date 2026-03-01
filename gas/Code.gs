@@ -1,11 +1,27 @@
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 const SHEET_NAME = 'Sheet1';
+const ADMIN_EMAIL = ['yaogeog@gmail.com','yaogoking@gmail.com']'; // 請修改為您的 Email
+
+function _checkAuth() {
+  const userEmail = Session.getActiveUser().getEmail();
+  if (!ADMIN_EMAIL.includes(userEmail)) {
+    throw new Error('未授權的操作：只有管理員可以修改資料。您的帳號是：' + (userEmail || '未登入'));
+  }
+}
 
 function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('OH French 學法語')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function getUserEmail() {
+  return Session.getActiveUser().getEmail();
+}
+
+function getAdminEmail() {
+  return ADMIN_EMAIL;
 }
 
 function _getSheet() {
@@ -70,6 +86,7 @@ function getUnits() {
 
 function saveData(unitName, dataArray) {
   try {
+    _checkAuth();
     const sheet = _getSheet();
     const data = sheet.getDataRange().getValues();
     

@@ -429,6 +429,16 @@
                 this.currentMode = 'review';
                 this.voices = [];
                 this.isLocal = typeof google === 'undefined';
+                this.adminEmail = []; // 從後端獲取 (陣列)
+                this.userEmail = '';
+
+                // 本地模擬身分 (僅在 isLocal 為 true 時有效)
+                if (this.isLocal) {
+                    const params = new URLSearchParams(window.location.search);
+                    this.userEmail = params.get('mockEmail') || 'guest@example.com';
+                    this.adminEmail = ['test@gmail.com'];
+                    console.log('Local Mode - Active User:', this.userEmail);
+                }
 
                 // States
                 this.fc = { index: 0, order: [], isShuffled: false, flipped: false };
@@ -461,6 +471,54 @@
                         const target = e.currentTarget.dataset.target;
                         this.switchLearningMode(target);
                     });
+                });
+            }
+
+            async checkAuth() {
+                if (this.isLocal) {
+                    const isAllowed = this.adminEmail.includes(this.userEmail);
+                    if (!isAllowed) {
+                        this.showToast('本地權限模擬：帳號 (' + this.userEmail + ') 無權執行', true);
+                    }
+                    return isAllowed;
+                }
+
+                // 第一次執行時，先向後端拿取管理員 Email 設定
+                if (!this.adminEmail || !this.adminEmail.length) {
+                    try {
+                        this.adminEmail = await new Promise((resolve, reject) => {
+                            google.script.run
+                                .withSuccessHandler(res => {
+                                    // 確保 res 是陣列
+                                    resolve(Array.isArray(res) ? res : [res]);
+                                })
+                                .withFailureHandler(reject)
+                                .getAdminEmail();
+                        });
+                    } catch (e) {
+                        console.error('無法獲取管理員設定', e);
+                    }
+                }
+
+                if (this.adminEmail.includes(this.userEmail) && this.userEmail) return true;
+
+                return new Promise((resolve) => {
+                    google.script.run
+                        .withSuccessHandler(email => {
+                            this.userEmail = email;
+                            if (this.adminEmail.includes(email) && email) {
+                                resolve(true);
+                            } else {
+                                this.showToast('權限不足', true);
+                                resolve(false);
+                            }
+                        })
+                        .withFailureHandler(err => {
+                            console.error(err);
+                            this.showToast('驗證身分出錯', true);
+                            resolve(false);
+                        })
+                        .getUserEmail();
                 });
             }
 
@@ -514,7 +572,8 @@
 
             goHome() { this.showView('home'); this.renderHome(); }
 
-            goCreate() {
+            async goCreate() {
+                if (!(await this.checkAuth())) return;
                 this.showView('create');
                 document.getElementById('create-form').reset();
                 document.getElementById('form-rows').innerHTML = '';
@@ -562,10 +621,12 @@
             }
 
             async saveEditUnit() {
+                if (!(await this.checkAuth())) return;
                 await this.saveData('edit');
             }
 
             async saveData(action) {
+                if (!(await this.checkAuth())) return;
                 let unitName, frInputs, enInputs;
 
                 if (action === 'add') {
@@ -687,7 +748,8 @@
             }
 
             /* ── Edit Modal Logic ── */
-            openEditModal() {
+            async openEditModal() {
+                if (!(await this.checkAuth())) return;
                 const modal = document.getElementById('edit-modal');
                 document.getElementById('edit-unit-name').value = this.currentUnit.Unit_Name;
                 const rowsContainer = document.getElementById('edit-form-rows');
