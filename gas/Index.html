@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         body {
-            background-color: #F5F2F4;
+            background-color: #F2F0F2;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -195,7 +195,7 @@
         }
 
         .flashcard-back {
-            background: linear-gradient(135deg, #70A0E1, #88B0E1);
+            background: linear-gradient(135deg, #6194db, #7da9de);
             color: white;
             transform: rotateY(180deg);
             box-shadow: 0 8px 28px rgba(130, 178, 225, 0.4);
@@ -324,7 +324,7 @@
                         <label class="block text-sm font-medium text-gray-600 mb-2">詞單名稱</label>
                         <input type="text" id="input-unit-name" required
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                            style="--tw-ring-color:#5A92CC;" placeholder="e.g. 基礎問候語">
+                            style="--tw-ring-color:#5A92CC;" placeholder="topic name">
                     </div>
 
                     <div id="form-rows" class="space-y-3 mb-4">
@@ -366,14 +366,16 @@
                     <div class="flex items-center gap-3 text-sm">
                         <i class="fa-solid fa-gear text-macaron-blue"></i>
                         <label class="text-gray-500">speed</label>
-                        <input type="range" id="tts-rate" min="0.6" max="1.2" step="0.1" value="1.0"
+                        <input type="range" id="tts-rate" min="0.6" max="1.2" step="0.2" value="1.0"
                             class="w-20 accent-blue-400"
                             oninput="document.getElementById('tts-rate-label').textContent=parseFloat(this.value).toFixed(1)">
                         <span id="tts-rate-label" class="text-gray-700 font-semibold w-7">1.0</span>
-                        <div class="h-4 w-px bg-gray-200"></div>
-                        <label class="text-gray-500">voice</label>
-                        <select id="tts-voice"
-                            class="bg-transparent border-none outline-none text-gray-700 w-28 truncate cursor-pointer text-xs"></select>
+                        <div class="hidden md:flex items-center gap-3">
+                            <div class="h-4 w-px bg-gray-200"></div>
+                            <label class="text-gray-500">voice</label>
+                            <select id="tts-voice"
+                                class="bg-transparent border-none outline-none text-gray-700 w-28 truncate cursor-pointer text-xs"></select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -800,15 +802,22 @@
 
             addFormRow(containerId) {
                 const row = document.createElement('div');
-                row.className = 'form-row flex gap-2 sm:gap-3 items-center bg-gray-50/50 p-2 sm:p-0 rounded-xl sm:rounded-none mb-2';
+                row.className = 'form-row flex items-start gap-2 bg-white sm:bg-gray-50/50 p-3 sm:p-2 rounded-xl mb-3 shadow-sm sm:shadow-none border border-gray-100 sm:border-0';
                 row.innerHTML = `
-                  <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
-                    <i class="fa-solid fa-grip-vertical"></i>
+                  <div class="flex flex-col items-center gap-2 mt-2">
+                    <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
+                      <i class="fa-solid fa-grip-vertical"></i>
+                    </div>
+                    <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-xs text-center"></div>
                   </div>
-                  <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center"></div>
-                  <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 font-bold" placeholder="法語 (e.g. Bonjour)" required>
-                  <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2" placeholder="意思 (e.g. Hello)" required>
-                  <button type="button" onclick="this.parentElement.remove(); app.reindexRows('${containerId}')" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
+                  <div class="flex-1 flex flex-col sm:flex-row gap-2">
+                    <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 font-bold text-sm" placeholder="法語" required>
+                    <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 text-sm" placeholder="意思" required>
+                  </div>
+                  <button type="button" onclick="this.parentElement.remove(); app.reindexRows('${containerId}')" 
+                    class="text-gray-300 hover:text-red-400 p-2 mt-1 shrink-0">
+                    <i class="fa-solid fa-trash-can text-sm"></i>
+                  </button>`;
                 document.getElementById(containerId).appendChild(row);
                 this.reindexRows(containerId);
             }
@@ -823,15 +832,22 @@
 
                 this.currentUnit.sentences.forEach((s, idx) => {
                     const row = document.createElement('div');
-                    row.className = 'form-row flex gap-3 items-center mb-2';
+                    row.className = 'form-row flex items-start gap-2 bg-gray-50/50 p-3 sm:p-2 rounded-xl mb-3 border border-gray-100 sm:border-0';
                     row.innerHTML = `
-                      <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
-                        <i class="fa-solid fa-grip-vertical"></i>
+                      <div class="flex flex-col items-center gap-2 mt-2">
+                        <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-xs text-center">${idx + 1}</div>
+                        <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
+                          <i class="fa-solid fa-grip-vertical"></i>
+                        </div>
                       </div>
-                      <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
-                      <input type="text" class="fr-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 font-bold" placeholder="法語" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
-                      <input type="text" class="en-input flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2" placeholder="意思" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
-                      <button type="button" onclick="this.parentElement.remove(); app.reindexRows('edit-form-rows')" class="text-gray-300 hover:text-red-400 p-2"><i class="fa-solid fa-trash"></i></button>`;
+                      <div class="flex-1 flex flex-col sm:flex-row gap-2">
+                        <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 font-bold text-sm" placeholder="Bonjour" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
+                        <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 text-sm" placeholder="Good morning" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
+                      </div>
+                      <button type="button" onclick="this.parentElement.remove(); app.reindexRows('edit-form-rows')" 
+                        class="text-gray-300 hover:text-pink-400 p-1 mt-0 shrink-0">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                      </button>`;
                     rowsContainer.appendChild(row);
                 });
 
@@ -1006,8 +1022,8 @@
                     r.innerHTML = `
                         <div class="flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
                         <div class="flex-1 min-w-0">
-                          <h3 class="text-lg font-bold text-gray-800 mb-0.5 mask-fr ${isFrMasked ? 'masked' : ''}">${s.FR_Sentence}</h3>
-                          <p class="text-gray-500 text-sm mask-en ${isEnMasked ? 'masked' : ''}">${s.EN_Translation}</p>
+                          <h3 class="text-lg font-bold text-gray-800 mb-0.5 mask-fr cursor-pointer transition-all ${isFrMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.FR_Sentence}</h3>
+                          <p class="text-gray-500 text-sm mask-en cursor-pointer transition-all ${isEnMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.EN_Translation}</p>
                         </div>
                         <button class="play-btn play-btn-review shrink-0" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')">
                           <i class="fa-solid fa-volume-high text-sm"></i>
@@ -1030,25 +1046,25 @@
             }
 
             toggleMask(type) {
-                const els = document.querySelectorAll(`.mask-${type}`);
-                if (!els.length) return;
-                const isMasked = els[0].classList.contains('masked');
-                els.forEach(el => el.classList.toggle('masked', !isMasked));
                 const btn = document.getElementById(`toggle-${type}-btn`);
-                if (btn) {
-                    const icon = btn.querySelector('i');
-                    const becomesMasked = !isMasked;
-                    if (becomesMasked) {
-                        // Hidden state
-                        icon.className = 'fa-solid fa-eye-slash text-xs';
-                    } else {
-                        // Shown state (Default)
-                        icon.className = 'fa-solid fa-eye text-xs';
-                    }
-                    // Color remains gray as requested (no class toggling for color)
-                    btn.classList.remove('bg-pink-50', 'border-pink-200', 'text-pink-600');
-                    btn.classList.add('border-gray-200', 'text-gray-600', 'bg-white');
+                if (!btn) return;
+                const icon = btn.querySelector('i');
+                const isMasked = icon.classList.contains('fa-eye-slash');
+                const becomesMasked = !isMasked;
+
+                const els = document.querySelectorAll(`.mask-${type}`);
+                els.forEach(el => el.classList.toggle('masked', becomesMasked));
+
+                if (becomesMasked) {
+                    // Hidden state
+                    icon.className = 'fa-solid fa-eye-slash text-xs';
+                } else {
+                    // Shown state (Default)
+                    icon.className = 'fa-solid fa-eye text-xs';
                 }
+                // Color remains gray as requested (no class toggling for color)
+                btn.classList.remove('bg-pink-50', 'border-pink-200', 'text-pink-600');
+                btn.classList.add('border-gray-200', 'text-gray-600', 'bg-white');
             }
 
             /* ── Flashcard navigation ── */
