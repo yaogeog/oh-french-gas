@@ -1,11 +1,11 @@
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 const SHEET_NAME = 'Sheet1';
-const ADMIN_EMAIL = ['yaogeog@gmail.com','yaogoking@gmail.com']'; // 請修改為您的 Email
+const ADMIN_EMAIL = ['yaogeog@gmail.com','yaogoking@gmail.com']; // 請修改為您的 Email
 
 function _checkAuth() {
   const userEmail = Session.getActiveUser().getEmail();
   if (!ADMIN_EMAIL.includes(userEmail)) {
-    throw new Error('未授權的操作：只有管理員可以修改資料。您的帳號是：' + (userEmail || '未登入'));
+    throw new Error('未授權的操作：只有管理員可以修改資料。');
   }
 }
 
@@ -123,3 +123,45 @@ function saveData(unitName, dataArray) {
     return { success: false, message: error.toString() };
   }
 }
+
+/**
+ * 修改現有單元
+ */
+function editData(unitId, unitName, dataArray) {
+  try {
+    _checkAuth();
+    const sheet = _getSheet();
+    const data = sheet.getDataRange().getValues();
+    
+    // Determine which rows to delete (those with matching unitId)
+    // Delete backwards to keep row indices correct
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (data[i][0] == unitId) {
+        sheet.deleteRow(i + 1);
+      }
+    }
+    
+    // Prepare updated rows
+    const newRows = [];
+    dataArray.forEach((item, index) => {
+      newRows.push([
+        unitId,
+        unitName,
+        index + 1,
+        item.fr,
+        item.en
+      ]);
+    });
+    
+    // Append the updated rows
+    if (newRows.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 5).setValues(newRows);
+    }
+    
+    return { success: true, message: "單元更新成功！" };
+  } catch (error) {
+    console.error("Error in editData: ", error);
+    return { success: false, message: error.toString() };
+  }
+}
+

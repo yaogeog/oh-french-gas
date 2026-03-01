@@ -40,7 +40,7 @@
         }
 
         .text-macaron-pink {
-            color: #D0909F;
+            color: #E08099;
         }
 
         .text-macaron-purple {
@@ -676,12 +676,20 @@
                 // Currently backend only exposes `saveData(unitName, dataArray)`
                 // Note: The user requested editing, but the backend architecture relies on `Unit_Name` as sheet name. 
                 let functionCall;
-                if (action === 'edit' && this.currentUnit.Unit_Name !== unitName) {
-                    // We would ideally call an editData function. Let's assume we call editData on GAS.
-                    functionCall = google.script.run.withSuccessHandler(res => { this.handleGASResponse(res, action); }).withFailureHandler(err => this.handleGASError(err, action)).editData(this.currentUnit.Unit_Name, unitName, dataArray);
+                if (action === 'edit') {
+                    // Call the new editData function on GAS, passing unitId
+                    functionCall = google.script.run
+                        .withSuccessHandler(res => { this.handleGASResponse(res, action); })
+                        .withFailureHandler(err => this.handleGASError(err, action))
+                        .editData(this.currentUnit.Unit_ID, unitName, dataArray);
                 } else {
-                    functionCall = google.script.run.withSuccessHandler(res => { this.handleGASResponse(res, action); }).withFailureHandler(err => this.handleGASError(err, action)).saveData(unitName, dataArray);
+                    // Call saveData for new units
+                    functionCall = google.script.run
+                        .withSuccessHandler(res => { this.handleGASResponse(res, action); })
+                        .withFailureHandler(err => this.handleGASError(err, action))
+                        .saveData(unitName, dataArray);
                 }
+
             }
 
             handleGASResponse(res, action) {
