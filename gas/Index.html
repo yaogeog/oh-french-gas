@@ -1154,9 +1154,20 @@
                 const inputVal = document.getElementById(`quiz-input-${idx}`).value;
                 const resDiv = document.getElementById(`quiz-result-${idx}`);
                 const normalize = str => str.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+
+                // 將 expected 以斜線分割成多個可接受答案（支援半形 / 與全形 ／）
+                const options = expected
+                    .split(/\s*\/\s*|\s*／\s*/)
+                    .map(s => s.trim())
+                    .filter(Boolean);
+
                 resDiv.classList.remove('hidden', 'text-green-600', 'text-red-600', 'bg-green-50', 'bg-red-50');
                 resDiv.classList.add('p-3', 'rounded-lg');
-                if (normalize(inputVal) === normalize(expected)) {
+
+                // 檢查輸入是否與任一選項相符
+                const isCorrect = options.some(opt => normalize(inputVal) === normalize(opt));
+
+                if (isCorrect) {
                     resDiv.innerHTML = '<i class="fa-solid fa-check mr-2"></i> 正確！';
                     resDiv.classList.add('text-green-600', 'bg-green-50');
                 } else {
