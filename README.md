@@ -12,7 +12,7 @@
    - **卡片** (Flashcards)：翻轉單字卡，用於記憶單字和自我檢測。
    - **考試** (Quiz)：聽讀填空，具備容錯比對（忽略大小寫與標點）。
 
-![alt text](image-1.png)
+![alt text](image.png)
 
 ## 建立自己的 OH French
 
