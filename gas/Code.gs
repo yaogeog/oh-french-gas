@@ -1,6 +1,6 @@
 const SPREADSHEET_ID = SpreadsheetApp.getActiveSpreadsheet().getId();
 const SHEET_NAME = 'Sheet1';
-const EDIT_PASSWORD = '@oa975bcf';
+const EDIT_PASSWORD = '';
 
 function _checkAuth(password) {
   if (password !== EDIT_PASSWORD) {
@@ -128,33 +128,30 @@ function editData(unitId, unitName, dataArray, password) {
   try {
     _checkAuth(password);
     const sheet = _getSheet();
-    const data = sheet.getDataRange().getValues();
-    
-    // Determine which rows to delete (those with matching unitId)
-    // Delete backwards to keep row indices correct
-    for (let i = data.length - 1; i >= 1; i--) {
-      if (data[i][0] == unitId) {
-        sheet.deleteRow(i + 1);
-      }
-    }
-    
-    // Prepare updated rows
-    const newRows = [];
-    dataArray.forEach((item, index) => {
-      newRows.push([
-        unitId,
-        unitName,
-        index + 1,
-        item.fr,
-        item.en
-      ]);
-    });
-    
-    // Append the updated rows
-    if (newRows.length > 0) {
-      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 5).setValues(newRows);
-    }
-    
+    const range = sheet.getDataRange();
+    const data = range.getValues();
+    const headers = data[0]; // 保留標題 [cite: 34]
+
+    // 1. 過濾掉舊的該 unitId 資料，只保留其他單元的資料
+    // 使用 filter 比跑迴圈 deleteRow 快上百倍
+    const remainingRows = data.slice(1).filter(row => row[0] != unitId);
+
+    // 2. 準備更新後的資料列
+    const updatedRows = dataArray.map((item, index) => [
+      unitId,
+      unitName,
+      index + 1,
+      item.fr,
+      item.en
+    ]);
+
+    // 3. 合併結果
+    const finalData = [headers, ...remainingRows, ...updatedRows];
+
+    // 4. 清除舊內容並一次性寫入新內容
+    sheet.clearContents();
+    sheet.getRange(1, 1, finalData.length, 5).setValues(finalData);
+
     return { success: true, message: "單元更新成功！" };
   } catch (error) {
     console.error("Error in editData: ", error);
