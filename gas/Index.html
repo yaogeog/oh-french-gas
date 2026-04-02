@@ -591,6 +591,15 @@
                 icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             }
 
+            /* ── Shuffle Logic ── */
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
             /* ── Auth Custom Modal ── */
             promptPasswordModal() {
                 this.authPasswordInput.value = '';
@@ -998,7 +1007,7 @@
                 else if (mode === 'flashcard') {
                     this.fc.index = 0;
                     this.fc.order = sentences.map((_, i) => i);
-                    if (this.fc.isShuffled) this.fc.order.sort(() => Math.random() - 0.5);
+                    if (this.fc.isShuffled) this.shuffle(this.fc.order);
 
                     const controls = document.createElement('div');
                     controls.className = 'flex justify-between items-center mb-4';
@@ -1064,7 +1073,7 @@
                         q.className = 'macaron-card p-5';
                         q.innerHTML = `
                           <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-base text-[var(--text-main)]font-medium flex-1">
+                            <h3 class="text-base text-[var(--text-main)] font-medium flex-1">
                               <span class="font-bold mr-2 text-macaron-orange">Q${displayIdx + 1}.</span>${questionText}
                             </h3>
                             <button class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-sm hover:bg-orange-100 transition-colors shrink-0 ml-3 text-macaron-orange" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')" title="播放法文">
@@ -1120,7 +1129,7 @@
                 const btn = document.getElementById('review-shuffle-btn');
                 if (this.review.isShuffled) {
                     btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border bg-pink-50 border-pink-200 text-pink-400';
-                    this.review.order = this.currentUnit.sentences.map((_, i) => i).sort(() => Math.random() - 0.5);
+                    this.review.order = this.shuffle(this.currentUnit.sentences.map((_, i) => i));
                 } else {
                     btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-200 text-gray-400 hover:border-gray-300';
                     this.review.order = this.currentUnit.sentences.map((_, i) => i);
@@ -1162,7 +1171,7 @@
                 const btn = document.getElementById('fc-shuffle-btn');
                 if (this.fc.isShuffled) {
                     btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border bg-blue-50 border-blue-200 text-blue-500';
-                    this.fc.order = this.currentUnit.sentences.map((_, i) => i).sort(() => Math.random() - 0.5);
+                    this.fc.order = this.shuffle(this.currentUnit.sentences.map((_, i) => i));
                 } else {
                     btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border border-gray-200 text-gray-400 hover:border-gray-300';
                     this.fc.order = this.currentUnit.sentences.map((_, i) => i);
@@ -1218,7 +1227,7 @@
             toggleQuizShuffle() {
                 this.quiz.isShuffled = !this.quiz.isShuffled;
                 if (this.quiz.isShuffled) {
-                    this.quiz.order.sort(() => Math.random() - 0.5);
+                    this.shuffle(this.quiz.order);
                 } else {
                     this.quiz.order = this.currentUnit.sentences.map((_, i) => i);
                 }
