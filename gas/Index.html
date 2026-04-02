@@ -6,12 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oh French</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
+        :root {
+            --bg-main: #F2F0F2;
+            --bg-card: #ffffff;
+            --text-main: #374151;
+            /* gray-700 */
+            --text-muted: #6b7280;
+            /* gray-500 */
+            --border-color: #eef2f8;
+            --header-bg: #ffffff;
+        }
+
+        .dark {
+            --bg-main: #121212;
+            --bg-card: #1e1e1e;
+            --text-main: #e5e7eb;
+            /* gray-200 */
+            --text-muted: #9ca3af;
+            /* gray-400 */
+            --border-color: #333333;
+            --header-bg: #1e1e1e;
+        }
+
         body {
-            background-color: #F2F0F2;
+            background-color: var(--bg-main);
+            color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* ── Custom Color Utilities ── */
@@ -57,15 +86,23 @@
 
         /* ── Card ── */
         .macaron-card {
-            background: white;
+            background: var(--bg-card);
             border-radius: 1rem;
             box-shadow: 0 4px 16px rgba(162, 194, 225, 0.18);
-            border: 1px solid #eef2f8;
-            transition: box-shadow 0.2s, transform 0.2s;
+            border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s, transform 0.2s, background-color 0.3s, border-color 0.3s;
+        }
+
+        .dark .macaron-card {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
         }
 
         .macaron-card:hover {
             box-shadow: 0 8px 28px rgba(162, 194, 225, 0.28);
+        }
+
+        .dark .macaron-card:hover {
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
         }
 
         /* ── Nav active state dynamic colors ── */
@@ -186,12 +223,17 @@
             justify-content: center;
             border-radius: 1.25rem;
             padding: 2rem;
-            border: 1px solid #eef2f8;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
         .flashcard-front {
-            background: white;
+            background: var(--bg-card);
             box-shadow: 0 8px 28px rgba(162, 194, 225, 0.2);
+        }
+
+        .dark .flashcard-front {
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
         }
 
         .flashcard-back {
@@ -199,6 +241,11 @@
             color: white;
             transform: rotateY(180deg);
             box-shadow: 0 8px 28px rgba(130, 178, 225, 0.4);
+        }
+
+        .dark .flashcard-back {
+            background: linear-gradient(135deg, #2d4a7a, #3a5b8a);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
         }
 
         /* ── Scrollbar ── */
@@ -249,9 +296,16 @@
 
     <!-- Header -->
     <header id="main-header"
-        class="bg-white px-5 py-3 shadow-sm sticky top-0 z-50 flex justify-between items-center transition-colors duration-300">
-        <div class="text-xl font-bold flex items-center gap-2 cursor-pointer" style="" onclick="app.goHome()">
-            <i class="fa-solid fa-language" style="color:#5292B1;"></i> OH French
+        class="bg-[var(--header-bg)] px-5 py-3 shadow-sm sticky top-0 z-50 flex justify-between items-center transition-colors duration-300">
+        <div class="flex items-center gap-4">
+            <div class="text-xl font-bold flex items-center gap-2 cursor-pointer text-[var(--text-main)]"
+                onclick="app.goHome()">
+                <i class="fa-solid fa-language" style="color:#5292B1;"></i> OH French
+            </div>
+            <button id="dark-mode-toggle"
+                class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </div>
 
         <!-- Navigation for Learning Mode -->
@@ -288,15 +342,15 @@
 
         <!-- Loading Overlay -->
         <div id="loading-overlay"
-            class="absolute inset-0 bg-white/80 z-40 flex flex-col items-center justify-center hidden rounded-2xl">
+            class="absolute inset-0 bg-[var(--bg-main)]/80 z-40 flex flex-col items-center justify-center hidden rounded-2xl">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4" style="color:#B87FD0;"></i>
-            <p class="text-gray-500 font-medium tracking-wide">載入中...</p>
+            <p class="text-[var(--text-muted)] font-medium tracking-wide">載入中...</p>
         </div>
 
         <!-- 1. Home Dashboard View -->
         <div id="view-home" class="view-section">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold flex items-center gap-2 text-gray-800">
+                <h2 class="text-2xl font-bold flex items-center gap-2 text-[var(--text-main)]">
                     <i class="fa-solid fa-book-open" style="color:#B87FD0;"></i> 我的詞單
                 </h2>
                 <button onclick="app.goCreate()"
@@ -356,7 +410,7 @@
             <div class="macaron-card p-4 mb-5">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div class="flex items-center gap-2">
-                        <h2 id="learning-unit-title" class="text-lg font-bold text-gray-800">單元名稱</h2>
+                        <h2 id="learning-unit-title" class="text-lg font-bold text-[var(--text-main)]">單元名稱</h2>
                         <button id="edit-unit-btn" onclick="app.openEditModal()"
                             class="text-gray-400 hover:text-blue-500 text-sm px-2 hidden" title="編輯詞單">
                             <i class="fa-solid fa-pen"></i> 編輯
@@ -369,12 +423,12 @@
                         <input type="range" id="tts-rate" min="0.6" max="1.2" step="0.2" value="1.0"
                             class="w-20 accent-blue-400"
                             oninput="document.getElementById('tts-rate-label').textContent=parseFloat(this.value).toFixed(1)">
-                        <span id="tts-rate-label" class="text-gray-700 font-semibold w-7">1.0</span>
+                        <span id="tts-rate-label" class="text-[var(--text-main)] font-semibold w-7">1.0</span>
                         <div class="hidden md:flex items-center gap-3">
-                            <div class="h-4 w-px bg-gray-200"></div>
-                            <label class="text-gray-500">voice</label>
+                            <div class="h-4 w-px bg-gray-200 dark:bg-gray-700"></div>
+                            <label class="text-[var(--text-muted)]">voice</label>
                             <select id="tts-voice"
-                                class="bg-transparent border-none outline-none text-gray-700 w-28 truncate cursor-pointer text-xs"></select>
+                                class="bg-transparent border-none outline-none text-[var(--text-main)] w-28 truncate cursor-pointer text-xs"></select>
                         </div>
                     </div>
                 </div>
@@ -395,10 +449,12 @@
 
     <!-- Edit Unit Modal -->
     <div id="edit-modal" class="fixed inset-0 bg-black/40 z-50 items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-pen text-macaron-pink"></i> 編輯詞單</h3>
-                <button onclick="app.closeEditModal()" class="text-gray-400 hover:text-gray-600"><i
+        <div
+            class="bg-[var(--bg-card)] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[var(--border-color)]">
+            <div class="p-5 border-b border-[var(--border-color)] flex justify-between items-center">
+                <h3 class="text-lg font-bold text-[var(--text-main)]"><i class="fa-solid fa-pen text-macaron-pink"></i>
+                    編輯詞單</h3>
+                <button onclick="app.closeEditModal()" class="text-[var(--text-muted)] hover:text-[var(--text-main)]"><i
                         class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="p-5 overflow-y-auto flex-1">
@@ -424,10 +480,13 @@
 
     <!-- Auth Modal -->
     <div id="auth-modal" class="fixed inset-0 bg-black/40 z-50 items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-sm flex flex-col shadow-2xl">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-lock text-macaron-blue"></i> 權限驗證</h3>
-                <button onclick="app.closeAuthModal(false)" class="text-gray-400 hover:text-gray-600"><i
+        <div
+            class="bg-[var(--bg-card)] rounded-2xl w-full max-w-sm flex flex-col shadow-2xl border border-[var(--border-color)]">
+            <div class="p-5 border-b border-[var(--border-color)] flex justify-between items-center">
+                <h3 class="text-lg font-bold text-[var(--text-main)]"><i class="fa-solid fa-lock text-macaron-blue"></i>
+                    權限驗證</h3>
+                <button onclick="app.closeAuthModal(false)"
+                    class="text-[var(--text-muted)] hover:text-[var(--text-main)]"><i
                         class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="p-5">
@@ -458,6 +517,7 @@
                 this.isAuthenticated = false;
                 this.authPassword = '';
                 this.authPromiseResolve = null;
+                this.initDarkMode();
 
                 // 本地模擬身分 (僅在 isLocal 為 true 時有效)
                 if (this.isLocal) {
@@ -506,6 +566,29 @@
                         this.submitAuthModal();
                     }
                 });
+            }
+
+            /* ── Dark Mode Logic ── */
+            initDarkMode() {
+                this.darkModeBtn = document.getElementById('dark-mode-toggle');
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                    this.updateDarkModeIcon(true);
+                }
+
+                this.darkModeBtn.addEventListener('click', () => {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    this.updateDarkModeIcon(isDark);
+                });
+            }
+
+            updateDarkModeIcon(isDark) {
+                const icon = this.darkModeBtn.querySelector('i');
+                icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             }
 
             /* ── Auth Custom Modal ── */
@@ -790,8 +873,8 @@
                     el.onclick = () => this.goLearning(unit.Unit_ID);
                     el.innerHTML = `
                       <div class="flex justify-between items-start mb-3">
-                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-500 transition-colors">${unit.Unit_Name}</h3>
-                        <span class="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-500">${unit.sentences ? unit.sentences.length : 0} 詞</span>
+                        <h3 class="text-lg font-bold text-[var(--text-main)] group-hover:text-blue-500 transition-colors">${unit.Unit_Name}</h3>
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-300">${unit.sentences ? unit.sentences.length : 0} 詞</span>
                       </div>
                       <div class="flex items-center text-sm font-medium text-macaron-pink">
                         開始學習 <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
@@ -802,7 +885,7 @@
 
             addFormRow(containerId) {
                 const row = document.createElement('div');
-                row.className = 'form-row flex items-start gap-2 bg-white sm:bg-gray-50/50 p-3 sm:p-2 rounded-xl mb-3 shadow-sm sm:shadow-none border border-gray-100 sm:border-0';
+                row.className = 'form-row flex items-start gap-2 bg-[var(--bg-card)] sm:bg-gray-50/50 dark:sm:bg-gray-800/30 p-3 sm:p-2 rounded-xl mb-3 shadow-sm sm:shadow-none border border-[var(--border-color)] sm:border-0';
                 row.innerHTML = `
                   <div class="flex flex-col items-center gap-2 mt-2">
                     <div class="drag-handle text-gray-300 hover:text-gray-500 px-1">
@@ -811,8 +894,8 @@
                     <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-xs text-center"></div>
                   </div>
                   <div class="flex-1 flex flex-col sm:flex-row gap-2">
-                    <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 font-bold text-sm" placeholder="法語" required>
-                    <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 text-sm" placeholder="意思" required>
+                    <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] focus:outline-none focus:ring-1 font-bold text-sm" placeholder="法語" required>
+                    <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] focus:outline-none focus:ring-1 text-sm" placeholder="意思" required>
                   </div>
                   <button type="button" onclick="this.parentElement.remove(); app.reindexRows('${containerId}')" 
                     class="text-gray-300 hover:text-red-400 p-2 mt-1 shrink-0">
@@ -832,7 +915,7 @@
 
                 this.currentUnit.sentences.forEach((s, idx) => {
                     const row = document.createElement('div');
-                    row.className = 'form-row flex items-start gap-2 bg-gray-50/50 p-3 sm:p-2 rounded-xl mb-3 border border-gray-100 sm:border-0';
+                    row.className = 'form-row flex items-start gap-2 bg-gray-50/50 dark:bg-gray-800/30 p-3 sm:p-2 rounded-xl mb-3 border border-[var(--border-color)] sm:border-0';
                     row.innerHTML = `
                       <div class="flex flex-col items-center gap-2 mt-2">
                         <div class="row-index flex-shrink-0 w-6 text-macaron-pink font-bold text-xs text-center">${idx + 1}</div>
@@ -841,8 +924,8 @@
                         </div>
                       </div>
                       <div class="flex-1 flex flex-col sm:flex-row gap-2">
-                        <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 font-bold text-sm" placeholder="Bonjour" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
-                        <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-1 text-sm" placeholder="Good morning" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
+                        <input type="text" class="fr-input flex-1 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] focus:outline-none focus:ring-1 font-bold text-sm" placeholder="Bonjour" value="${s.FR_Sentence.replace(/"/g, '&quot;')}" required>
+                        <input type="text" class="en-input flex-1 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] focus:outline-none focus:ring-1 text-sm" placeholder="Good morning" value="${s.EN_Translation.replace(/"/g, '&quot;')}" required>
                       </div>
                       <button type="button" onclick="this.parentElement.remove(); app.reindexRows('edit-form-rows')" 
                         class="text-gray-300 hover:text-pink-400 p-1 mt-0 shrink-0">
@@ -924,7 +1007,7 @@
                         <span id="fc-current">1</span> <span class="text-gray-300">/</span> ${sentences.length}
                       </span>
                       <button id="fc-shuffle-btn" onclick="app.toggleShuffle()"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.fc.isShuffled ? 'bg-blue-50 border-blue-200 text-blue-500' : 'border-gray-200 text-gray-400 hover:border-gray-300'}">
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.fc.isShuffled ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-500 dark:text-blue-300' : 'border-[var(--border-color)] text-[var(--text-muted)] hover:border-blue-300'}">
                         <i class="fa-solid fa-shuffle text-xs"></i> 隨機
                       </button>`;
                     this.learningContent.appendChild(controls);
@@ -938,11 +1021,11 @@
                     nav.className = 'flex justify-center gap-4 mt-2';
                     nav.innerHTML = `
                       <button onclick="app.navFC(-1)"
-                        class="w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
+                        class="w-12 h-12 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm flex items-center justify-center text-[var(--text-muted)] hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
                         <i class="fa-solid fa-chevron-left text-lg"></i>
                       </button>
                       <button onclick="app.navFC(1)"
-                        class="w-12 h-12 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
+                        class="w-12 h-12 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm flex items-center justify-center text-[var(--text-muted)] hover:border-blue-300 hover:text-blue-500 transition-all active:scale-95">
                         <i class="fa-solid fa-chevron-right text-lg"></i>
                       </button>`;
                     this.learningContent.appendChild(nav);
@@ -962,10 +1045,10 @@
 
                     controls.innerHTML = `
                       <button id="quiz-shuffle-btn" onclick="app.toggleQuizShuffle()"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.quiz.isShuffled ? 'bg-orange-50 border-orange-200 text-orange-400' : 'border-gray-200 text-gray-400 hover:border-gray-300'}">
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${this.quiz.isShuffled ? 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800 text-orange-400' : 'border-[var(--border-color)] text-[var(--text-muted)] hover:border-orange-300'}">
                         <i class="fa-solid fa-shuffle text-xs"></i> 隨機
                       </button>
-                      <button onclick="app.toggleQuizLang()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-400 text-sm font-medium hover:bg-orange-100 transition-colors">
+                      <button onclick="app.toggleQuizLang()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/30 text-orange-400 text-sm font-medium hover:bg-orange-100 transition-colors">
                         <i class="fa-solid fa-arrows-rotate text-xs"></i> ${isFrTitle}
                       </button>`;
                     this.learningContent.appendChild(controls);
@@ -981,7 +1064,7 @@
                         q.className = 'macaron-card p-5';
                         q.innerHTML = `
                           <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-base text-gray-700 font-medium flex-1">
+                            <h3 class="text-base text-[var(--text-main)]font-medium flex-1">
                               <span class="font-bold mr-2 text-macaron-orange">Q${displayIdx + 1}.</span>${questionText}
                             </h3>
                             <button class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-sm hover:bg-orange-100 transition-colors shrink-0 ml-3 text-macaron-orange" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')" title="播放法文">
@@ -990,7 +1073,7 @@
                           </div>
                           <div class="flex flex-col sm:flex-row gap-3">
                             <input type="text" id="quiz-input-${displayIdx}"
-                              class="quiz-input flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-macaron-orange focus:outline-none"
+                              class="quiz-input flex-1 px-4 py-2.5 border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-main)] rounded-xl focus:ring-2 focus:ring-macaron-orange focus:outline-none"
                               placeholder="Your answer ..."
                               onkeydown="if(event.key==='Enter' && event.ctrlKey) { app.moveNextQuiz(${displayIdx}); } else if(event.key==='Enter') { app.checkQuiz(${displayIdx}, '${escape(answerText)}'); }">
                             <button class="px-5 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 shadow-sm bg-macaron-orange"
@@ -1022,8 +1105,8 @@
                     r.innerHTML = `
                         <div class="flex-shrink-0 w-6 text-macaron-pink font-bold text-sm text-center">${idx + 1}</div>
                         <div class="flex-1 min-w-0">
-                          <h3 class="text-lg font-bold text-gray-800 mb-0.5 mask-fr cursor-pointer transition-all ${isFrMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.FR_Sentence}</h3>
-                          <p class="text-gray-500 text-sm mask-en cursor-pointer transition-all ${isEnMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.EN_Translation}</p>
+                          <h3 class="text-lg font-bold text-[var(--text-main)] mb-0.5 mask-fr cursor-pointer transition-all ${isFrMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.FR_Sentence}</h3>
+                          <p class="text-[var(--text-muted)] text-sm mask-en cursor-pointer transition-all ${isEnMasked ? 'masked' : ''}" onclick="this.classList.toggle('masked')">${s.EN_Translation}</p>
                         </div>
                         <button class="play-btn play-btn-review shrink-0" onclick="app.playTTS('${s.FR_Sentence.replace(/'/g, "\\'")}')">
                           <i class="fa-solid fa-volume-high text-sm"></i>
@@ -1104,7 +1187,7 @@
                   <div class="flashcard-inner">
                     <div class="flashcard-front">
                       <p class="text-xs text-gray-300 mb-3 flex items-center gap-1"><i class="fa-solid fa-rotate"></i> 反面</p>
-                      <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 text-center mb-5 leading-snug">${s.FR_Sentence}</h2>
+                      <h2 class="text-3xl sm:text-4xl font-bold text-[var(--text-main)] text-center mb-5 leading-snug">${s.FR_Sentence}</h2>
                       <button class="w-11 h-11 rounded-full flex items-center justify-center border-2 text-blue-300 border-current hover:bg-blue-50 transition-colors"
                         onclick="event.stopPropagation(); app.playTTS('${fr}')">
                         <i class="fa-solid fa-volume-high"></i>
