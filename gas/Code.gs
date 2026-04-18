@@ -28,8 +28,8 @@ function _getSheet() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     // Initialize headers if new
-    sheet.appendRow(["Unit_ID", "Unit_Name", "Sentence_ID", "FR_Sentence", "EN_Translation"]);
-    sheet.getRange("A1:E1").setFontWeight("bold");
+    sheet.appendRow(["Unit_ID", "Unit_Name", "Sentence_ID", "FR_Sentence", "EN_Translation", "FR_Example"]);
+    sheet.getRange("A1:F1").setFontWeight("bold");
     sheet.setFrozenRows(1);
   }
   return sheet;
@@ -57,6 +57,7 @@ function getUnits() {
       const sentId = row[2];
       const fr = row[3];
       const en = row[4];
+      const frExample = row[5];
       
       if (!unitsMap.has(unitId)) {
         unitsMap.set(unitId, {
@@ -69,7 +70,8 @@ function getUnits() {
       unitsMap.get(unitId).sentences.push({
         Sentence_ID: sentId,
         FR_Sentence: fr,
-        EN_Translation: en
+        EN_Translation: en,
+        FR_Example: frExample
       });
     });
     
@@ -105,13 +107,14 @@ function saveData(unitName, dataArray, password) {
         unitName,
         index + 1,
         item.fr,
-        item.en
+        item.en,
+        item.frExample
       ]);
     });
     
     // Append rows efficiently
     if (newRows.length > 0) {
-      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 5).setValues(newRows);
+      sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 6).setValues(newRows);
     }
     
     return { success: true, newUnitId: newUnitId, message: "單元建立成功！" };
@@ -142,7 +145,8 @@ function editData(unitId, unitName, dataArray, password) {
       unitName,
       index + 1,
       item.fr,
-      item.en
+      item.en,
+      item.frExample
     ]);
 
     // 3. 合併結果
@@ -150,7 +154,7 @@ function editData(unitId, unitName, dataArray, password) {
 
     // 4. 清除舊內容並一次性寫入新內容
     sheet.clearContents();
-    sheet.getRange(1, 1, finalData.length, 5).setValues(finalData);
+    sheet.getRange(1, 1, finalData.length, 6).setValues(finalData);
 
     return { success: true, message: "單元更新成功！" };
   } catch (error) {
