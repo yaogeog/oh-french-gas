@@ -131,6 +131,13 @@
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
         }
 
+        .nav-btn.active.nav-matching {
+            background-color: #A274C2;
+            color: white;
+            font-weight: 600;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
         /* ── Header dynamic colors ── */
         .header-review {
             border-top: 4px solid #F08A96;
@@ -142,6 +149,10 @@
 
         .header-quiz {
             border-top: 4px solid #ECA07C;
+        }
+
+        .header-matching {
+            border-top: 4px solid #A274C2;
         }
 
         /* ── Play button ── */
@@ -172,6 +183,66 @@
         .play-btn-quiz {
             background-color: #ECA07C;
             box-shadow: 0 2px 8px rgba(244, 160, 138, 0.4);
+        }
+
+        .play-btn-matching {
+            background-color: #A274C2;
+            box-shadow: 0 2px 8px rgba(162, 116, 194, 0.4);
+        }
+
+        /* ── Matching Game ── */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .matching-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 4rem;
+        }
+
+        .matching-btn:hover:not(:disabled) {
+            border-color: #A274C2;
+            background-color: rgba(162, 116, 194, 0.05);
+        }
+
+        .matching-btn.selected {
+            border-color: #A274C2;
+            background-color: #A274C2;
+            color: white;
+            box-shadow: 0 4px 12px rgba(162, 116, 194, 0.3);
+        }
+
+        .matching-btn.matched {
+            opacity: 0.3;
+            cursor: default;
+            border-style: dashed;
+            background-color: transparent;
+        }
+
+        .matching-btn.correct-match {
+            border-color: #94E8AC;
+            background-color: rgba(74, 222, 128, 0.1);
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .matching-btn.wrong-match {
+            border-color: #F8AAAA;
+            background-color: rgba(248, 113, 113, 0.1);
+            box-shadow: 0 0 12px rgba(248, 113, 113, 0.4);
         }
 
         /* ── Flashcard 3D ── */
@@ -327,6 +398,12 @@
                 data-target="quiz">
                 <i class="fa-solid fa-pen-to-square mr-1"></i><span class="hidden sm:inline">考試</span><span
                     class="sm:hidden">考</span>
+            </button>
+            <button
+                class="nav-btn nav-matching px-3 py-1.5 rounded-full text-sm font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                data-target="matching">
+                <i class="fa-solid fa-puzzle-piece mr-1"></i><span class="hidden sm:inline">配對</span><span
+                    class="sm:hidden">配</span>
             </button>
             <div class="h-5 w-px bg-gray-200 mx-1 hidden sm:block"></div>
             <button
@@ -528,6 +605,16 @@
                 this.fc = { index: 0, order: [], isShuffled: false, flipped: false };
                 this.review = { isShuffled: false, order: [] };
                 this.quiz = { askLang: 'fr', isShuffled: false, order: [] }; // 'fr' means show French, translate to EN; 'en' means show EN, translate to FR
+                this.matching = {
+                    currentWords: [],
+                    leftList: [], // French
+                    rightList: [], // English
+                    selectedFr: null,
+                    selectedEn: null,
+                    matchedIds: new Set(),
+                    isFinished: false,
+                    feedback: { fr: null, en: null, type: null } // type: 'correct' or 'wrong'
+                };
 
                 this.cacheDOM();
                 this.initTTS();
@@ -699,7 +786,7 @@
             /* ── Navigation & Theming ── */
             setTheme(mode) {
                 // Remove all custom header theme classes
-                this.header.classList.remove('header-review', 'header-flashcard', 'header-quiz');
+                this.header.classList.remove('header-review', 'header-flashcard', 'header-quiz', 'header-matching');
 
                 // Reset all nav buttons
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1099,7 +1186,146 @@
                     });
                     this.learningContent.appendChild(wrap);
                 }
+
+                else if (mode === 'matching') {
+                    this.initMatchingGame();
+                }
             }
+
+            /* ── Matching Game Logic ── */
+            initMatchingGame() {
+                const sentences = this.currentUnit.sentences;
+                // Randomly pick 5 words
+                const allIndices = sentences.map((_, i) => i);
+                this.shuffle(allIndices);
+                const pickCount = Math.min(5, sentences.length);
+                const pickedIndices = allIndices.slice(0, pickCount);
+
+                this.matching.currentWords = pickedIndices.map(idx => ({
+                    id: idx,
+                    fr: sentences[idx].FR_Sentence,
+                    en: sentences[idx].EN_Translation
+                }));
+
+                // Prepare lists
+                this.matching.leftList = this.shuffle([...this.matching.currentWords]);
+                this.matching.rightList = this.shuffle([...this.matching.currentWords]);
+                this.matching.selectedFr = null;
+                this.matching.selectedEn = null;
+                this.matching.matchedIds = new Set();
+                this.matching.isFinished = false;
+                this.matching.feedback = { fr: null, en: null, type: null };
+
+                this.renderMatching();
+            }
+
+            renderMatching() {
+                this.learningContent.innerHTML = '';
+
+                if (this.matching.isFinished) {
+                    const winDiv = document.createElement('div');
+                    winDiv.className = 'flex flex-col items-center justify-center py-12';
+                    winDiv.innerHTML = `
+                        <div class="text-6xl mb-4">🎉</div>
+                        <h2 class="text-3xl font-bold text-macaron-purple mb-6">過關！</h2>
+                        <button onclick="app.initMatchingGame()" 
+                            class="px-8 py-3 rounded-2xl bg-macaron-purple text-white font-bold shadow-lg hover:opacity-90 transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-forward"></i> 下一組
+                        </button>
+                    `;
+                    this.learningContent.appendChild(winDiv);
+                    return;
+                }
+
+                const grid = document.createElement('div');
+                grid.className = 'matching-grid mt-4';
+
+                const leftCol = document.createElement('div');
+                leftCol.className = 'flex flex-col gap-3';
+                this.matching.leftList.forEach(word => {
+                    const isSelected = this.matching.selectedFr === word.id;
+                    const isMatched = this.matching.matchedIds.has(word.id);
+                    const isFeedback = this.matching.feedback.fr === word.id;
+                    const feedbackClass = isFeedback ? (this.matching.feedback.type === 'correct' ? 'correct-match' : 'wrong-match') : '';
+                    
+                    const btn = document.createElement('button');
+                    btn.className = `matching-btn ${isSelected ? 'selected' : ''} ${isMatched ? 'matched' : ''} ${feedbackClass}`;
+                    btn.textContent = word.fr;
+                    btn.disabled = isMatched || (this.matching.feedback.type !== null);
+                    btn.onclick = () => this.handleMatchingClick('fr', word.id);
+                    leftCol.appendChild(btn);
+                });
+
+                const rightCol = document.createElement('div');
+                rightCol.className = 'flex flex-col gap-3';
+                this.matching.rightList.forEach(word => {
+                    const isSelected = this.matching.selectedEn === word.id;
+                    const isMatched = this.matching.matchedIds.has(word.id);
+                    const isFeedback = this.matching.feedback.en === word.id;
+                    const feedbackClass = isFeedback ? (this.matching.feedback.type === 'correct' ? 'correct-match' : 'wrong-match') : '';
+
+                    const btn = document.createElement('button');
+                    btn.className = `matching-btn ${isSelected ? 'selected' : ''} ${isMatched ? 'matched' : ''} ${feedbackClass}`;
+                    btn.textContent = word.en;
+                    btn.disabled = isMatched || (this.matching.feedback.type !== null);
+                    btn.onclick = () => this.handleMatchingClick('en', word.id);
+                    rightCol.appendChild(btn);
+                });
+
+                grid.appendChild(leftCol);
+                grid.appendChild(rightCol);
+                this.learningContent.appendChild(grid);
+            }
+
+            handleMatchingClick(type, id) {
+                if (this.matching.feedback.type !== null) return; // Ignore clicks during feedback delay
+
+                if (type === 'fr') {
+                    const word = this.matching.currentWords.find(w => w.id === id);
+                    this.playTTS(word.fr);
+                    this.matching.selectedFr = id;
+                } else {
+                    this.matching.selectedEn = id;
+                }
+
+                this.checkMatch();
+                this.renderMatching();
+            }
+
+            checkMatch() {
+                if (this.matching.selectedFr !== null && this.matching.selectedEn !== null) {
+                    const frId = this.matching.selectedFr;
+                    const enId = this.matching.selectedEn;
+
+                    if (frId === enId) {
+                        // Correct!
+                        this.matching.feedback = { fr: frId, en: enId, type: 'correct' };
+                        this.matching.selectedFr = null;
+                        this.matching.selectedEn = null;
+
+                        setTimeout(() => {
+                            this.matching.matchedIds.add(frId);
+                            this.matching.feedback = { fr: null, en: null, type: null };
+                            
+                            if (this.matching.matchedIds.size === this.matching.currentWords.length) {
+                                this.matching.isFinished = true;
+                            }
+                            this.renderMatching();
+                        }, 500);
+                    } else {
+                        // Wrong!
+                        this.matching.feedback = { fr: frId, en: enId, type: 'wrong' };
+                        this.matching.selectedFr = null;
+                        this.matching.selectedEn = null;
+
+                        setTimeout(() => {
+                            this.matching.feedback = { fr: null, en: null, type: null };
+                            this.renderMatching();
+                        }, 500);
+                    }
+                }
+            }
+            
 
             /* ── Review: render list & shuffle ── */
             renderReviewList() {
